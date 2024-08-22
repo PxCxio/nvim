@@ -11,7 +11,7 @@ vim.opt.mouse = "a"
 vim.opt.paste = true
 
 -- caoSED.vim equivalent
-vim.api.nvim_set_keymap("n", "<leader>cao", ":%s/<C-r>a/<C-r>b/g<left><left><left><CR>", { noremap = true })
+vim.api.nvim_set_keymap("n", "<leader>cao", ":%s/<C-r>a/<C-r>b/g<Left><Left><Left>", { noremap = true, expr = false })
 
 -- daf_vaf.vim equivalent
 vim.api.nvim_set_keymap("n", "daf", "$%v%0x<CR>", { noremap = true })
