@@ -1,6 +1,6 @@
 # My Neovim Configuration
 
-This repository contains my personal Neovim configuration, offering a streamlined and efficient development environment.
+This repository contains my personal Neovim configuration, With added code from the kickstart.lua and Some personal keys like Visual Around Function DAF, And Freeze Row <Leader>FR that emulates freeze row from excel/sheets with automatic splits. offering a streamlined and efficient development environment.
 
 ## Installation
 
