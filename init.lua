@@ -5,8 +5,66 @@ vim.opt.tabstop = 4
 vim.opt.backspace = { "indent", "eol", "start" }
 vim.opt.mouse = "a"
 -- vim.opt.foldmethod = 'manual' -- Not directly supported in Neovim
-
 -- Consider using a plugin like nvim-fold-manual for custom folding
+
+-- Enable mouse mode, can be useful for resizing splits for example!
+vim.opt.mouse = "a"
+
+-- Enable break indent
+vim.opt.breakindent = true
+
+-- Save undo history
+vim.opt.undofile = true
+
+-- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+
+-- Keep signcolumn on by default
+vim.opt.signcolumn = "yes"
+
+-- Decrease update time
+vim.opt.updatetime = 250
+
+-- Decrease mapped sequence wait time
+-- Displays which-key popup sooner
+vim.opt.timeoutlen = 300
+
+-- Preview substitutions live, as you type!
+vim.opt.inccommand = "split"
+
+-- Show which line your cursor is on
+vim.opt.cursorline = true
+
+-- Minimal number of screen lines to keep above and below the cursor.
+vim.opt.scrolloff = 10
+
+-- [[ Basic Keymaps ]]
+--  See `:help vim.keymap.set()`
+
+-- Clear highlights on search when pressing <Esc> in normal mode
+--  See `:help hlsearch`
+vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
+
+-- Diagnostic keymaps
+vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
+vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next (D)iagnostic message" })
+vim.keymap.set("n", "<leader>e", vim.diagnostic.open_float, { desc = "Show diagnosis Error messages" })
+vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
+
+-- [[ Basic Autocommands ]]
+--  See `:help lua-guide-autocommands`
+
+-- Highlight when yanking (copying) text
+--  Try it with `yap` in normal mode
+--  See `:help vim.highlight.on_yank()`
+vim.api.nvim_create_autocmd("TextYankPost", {
+	desc = "Highlight when yanking (copying) text",
+	group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
+	callback = function()
+		vim.highlight.on_yank()
+	end,
+})
 
 vim.opt.paste = true
 
@@ -88,8 +146,7 @@ let g:matchup_matchparen_insert_mode = 0
 let g:matchup_surround_enabled = 1
 
 :hi SpellBad ctermfg=green guifg=blue
-]]
---
+]] --
 
 -- Configure matchup (replace with actual plugin-specific configuration if needed)
 vim.g.matchup_matchparen_insert_mode = 0
@@ -263,13 +320,16 @@ vim.opt.rtp:prepend(lazypath)
 -- Make sure to setup `mapleader` and `maplocalleader` before
 -- loading lazy.nvim so that mappings are correct.
 -- This is also a good place to setup other settings (vim.opt)
+-- Set Leader Key
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
--- Set Leader Key
 vim.api.nvim_set_keymap("n", "\\v", "<c-v>", { noremap = true })
 -- vim.api.nvim_set_keymap('n', '<leader><space>', '<c-space>', { noremap = true })
 -- vim.api.nvim_set_keymap('n', '<leader>e', '<c-E>', { noremap = true })
+-- Set leader ll to start ollama complete with deoplete 
+vim.keymap.set({ 'n', 'v' }, '<leader>]', ':Gen<CR>')
+vim.keymap.set("n", "\\ll", ":deoplete#complete() <CR>")
 
 require("lazy").setup({
 	"neovim/nvim-lspconfig",
@@ -293,8 +353,41 @@ require("lazy").setup({
 	"andymass/vim-matchup",
 	"mbbill/undotree",
 	"dhruvasagar/vim-table-mode",
-	-- colorscheme that will be used when installing plugins.
-	install = { colorscheme = { "habamax" } },
+  "preservim/nerdtree",
+  {
+    "David-Kunz/gen.nvim",
+    opts = {
+        model = "tinydolphin", -- The default model to use.
+        quit_map = "q", -- set keymap for close the response window
+        retry_map = "<c-r>", -- set keymap to re-send the current prompt
+        accept_map = "<c-cr>", -- set keymap to replace the previous selection with the last result
+        host = "localhost", -- The host running the Ollama service.
+        port = "11434", -- The port on which the Ollama service is listening.
+        display_mode = "float", -- The display mode. Can be "float" or "split" or "horizontal-split".
+        show_prompt = false, -- Shows the prompt submitted to Ollama.
+        show_model = false, -- Displays which model you are using at the beginning of your chat session.
+        no_auto_close = false, -- Never closes the window automatically.
+        hidden = false, -- Hide the generation window (if true, will implicitly set `prompt.replace = true`), requires Neovim >= 0.10
+        init = function(options) pcall(io.popen, "ollama serve > /dev/null 2>&1 &") end,
+        -- Function to initialize Ollama
+        command = function(options)
+            local body = {model = options.model, stream = true}
+            return "curl --silent --no-buffer -X POST http://" .. options.host .. ":" .. options.port .. "/api/chat -d $body"
+        end,
+        -- The command for the Ollama service. You can use placeholders $prompt, $model and $body (shellescaped).
+        -- This can also be a command string.
+        -- The executed command must return a JSON object with { response, context }
+        -- (context property is optional).
+        -- list_models = '<omitted lua function>', -- Retrieves a list of model names
+        debug = false -- Prints errors and the command which is run.
+    }
+  },
+  {
+  "Shougo/deoplete.nvim",
+  },
+  
+  	-- colorscheme that will be used when installing plugins.
+	--	install = { colorscheme = { "habamax" } },
 	-- automatically check for plugin updates
 	checker = { enabled = true },
 	"tpope/vim-sleuth", -- Detect tabstop and shiftwidth automatically
@@ -364,6 +457,9 @@ require("lazy").setup({
 	-- you do for a plugin at the top level, you can do for a dependency.
 	--
 	-- Use the `dependencies` key to specify the dependencies of a particular plugin
+
+
+
 
 	{ -- Fuzzy Finder (files, lsp, etc)
 		"nvim-telescope/telescope.nvim",
@@ -729,6 +825,24 @@ require("lazy").setup({
 				}
 			end,
 			formatters_by_ft = {
+        javascript = { "prettier" },
+        typescript = { "prettier" },
+        javascriptreact = { "prettier" },
+        typescriptreact = { "prettier" },
+        svelte = { "prettier" },
+        css = { "prettier" },
+        html = { "prettier" },
+        json = { "prettier" },
+        yaml = { "prettier" },
+        markdown = { "prettier" },
+        graphql = { "prettier" },
+			  python = function(bufnr)
+      	if require("conform").get_formatter_info("ruff_format", bufnr).available then
+        return { "ruff_format" }
+      	else
+        	return { "isort", "black" }
+      		end
+    		end,
 				lua = { "stylua" },
 				-- Conform can also run multiple formatters sequentially
 				-- python = { "isort", "black" },
